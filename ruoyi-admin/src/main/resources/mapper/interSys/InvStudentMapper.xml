@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.interSys.mapper.InvStudentMapper">
+    
+    <resultMap type="InvStudent" id="InvStudentResult">
+        <result property="studentId"    column="student_id"    />
+        <result property="name"    column="name"    />
+        <result property="gender"    column="gender"    />
+        <result property="age"    column="age"    />
+        <result property="major"    column="major"    />
+        <result property="email"    column="email"    />
+        <result property="phone"    column="phone"    />
+    </resultMap>
+
+    <resultMap id="InvStudentInvRecordResult" type="InvStudent" extends="InvStudentResult">
+        <collection property="invRecordList" ofType="InvRecord" column="student_id" select="selectInvRecordList" />
+    </resultMap>
+
+    <resultMap type="InvRecord" id="InvRecordResult">
+        <result property="id"    column="id"    />
+        <result property="invStudentId"    column="inv_student_id"    />
+        <result property="invDate"    column="inv_date"    />
+        <result property="invResult"    column="inv_result"    />
+        <result property="invNotes"    column="inv_notes"    />
+    </resultMap>
+
+    <sql id="selectInvStudentVo">
+        select student_id, name, gender, age, major, email, phone from inv_student
+    </sql>
+
+    <select id="selectInvStudentList" parameterType="InvStudent" resultMap="InvStudentResult">
+        <include refid="selectInvStudentVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="major != null  and major != ''"> and major = #{major}</if>
+        </where>
+    </select>
+    
+    <select id="selectInvStudentByStudentId" parameterType="Long" resultMap="InvStudentInvRecordResult">
+        select student_id, name, gender, age, major, email, phone
+        from inv_student
+        where student_id = #{studentId}
+    </select>
+
+    <select id="selectInvRecordList" resultMap="InvRecordResult">
+        select id, inv_student_id, inv_date, inv_result, inv_notes
+        from inv_record
+        where inv_student_id = #{inv_student_id}
+    </select>
+
+    <insert id="insertInvStudent" parameterType="InvStudent" useGeneratedKeys="true" keyProperty="studentId">
+        insert into inv_student
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="gender != null and gender != ''">gender,</if>
+            <if test="age != null">age,</if>
+            <if test="major != null">major,</if>
+            <if test="email != null">email,</if>
+            <if test="phone != null">phone,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="gender != null and gender != ''">#{gender},</if>
+            <if test="age != null">#{age},</if>
+            <if test="major != null">#{major},</if>
+            <if test="email != null">#{email},</if>
+            <if test="phone != null">#{phone},</if>
+         </trim>
+    </insert>
+
+    <update id="updateInvStudent" parameterType="InvStudent">
+        update inv_student
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+        </trim>
+        where student_id = #{studentId}
+    </update>
+
+    <delete id="deleteInvStudentByStudentId" parameterType="Long">
+        delete from inv_student where student_id = #{studentId}
+    </delete>
+
+    <delete id="deleteInvStudentByStudentIds" parameterType="String">
+        delete from inv_student where student_id in 
+        <foreach item="studentId" collection="array" open="(" separator="," close=")">
+            #{studentId}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteInvRecordByInvStudentIds" parameterType="String">
+        delete from inv_record where inv_student_id in 
+        <foreach item="invStudentId" collection="array" open="(" separator="," close=")">
+            #{invStudentId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteInvRecordByInvStudentId" parameterType="Long">
+        delete from inv_record where inv_student_id = #{invStudentId}
+    </delete>
+
+    <insert id="batchInvRecord">
+        insert into inv_record( id, inv_student_id, inv_date, inv_result, inv_notes) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.id}, #{item.invStudentId}, #{item.invDate}, #{item.invResult}, #{item.invNotes})
+        </foreach>
+    </insert>
+</mapper>

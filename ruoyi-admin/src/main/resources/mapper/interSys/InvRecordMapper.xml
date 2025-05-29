@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.interSys.mapper.InvRecordMapper">
+    
+    <resultMap type="InvRecord" id="InvRecordResult">
+        <result property="id"    column="id"    />
+        <result property="invStudentId"    column="inv_student_id"    />
+        <result property="invDate"    column="inv_date"    />
+        <result property="invResult"    column="inv_result"    />
+        <result property="invNotes"    column="inv_notes"    />
+    </resultMap>
+
+    <sql id="selectInvRecordVo">
+        select id, inv_student_id, inv_date, inv_result, inv_notes from inv_record
+    </sql>
+
+    <select id="selectInvRecordList" parameterType="InvRecord" resultMap="InvRecordResult">
+        <include refid="selectInvRecordVo"/>
+        <where>  
+            <if test="invStudentId != null "> and inv_student_id = #{invStudentId}</if>
+        </where>
+    </select>
+    
+    <select id="selectInvRecordById" parameterType="Long" resultMap="InvRecordResult">
+        <include refid="selectInvRecordVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertInvRecord" parameterType="InvRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into inv_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="invStudentId != null">inv_student_id,</if>
+            <if test="invDate != null">inv_date,</if>
+            <if test="invResult != null">inv_result,</if>
+            <if test="invNotes != null">inv_notes,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="invStudentId != null">#{invStudentId},</if>
+            <if test="invDate != null">#{invDate},</if>
+            <if test="invResult != null">#{invResult},</if>
+            <if test="invNotes != null">#{invNotes},</if>
+         </trim>
+    </insert>
+
+    <update id="updateInvRecord" parameterType="InvRecord">
+        update inv_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="invStudentId != null">inv_student_id = #{invStudentId},</if>
+            <if test="invDate != null">inv_date = #{invDate},</if>
+            <if test="invResult != null">inv_result = #{invResult},</if>
+            <if test="invNotes != null">inv_notes = #{invNotes},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteInvRecordById" parameterType="Long">
+        delete from inv_record where id = #{id}
+    </delete>
+
+    <delete id="deleteInvRecordByIds" parameterType="String">
+        delete from inv_record where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
